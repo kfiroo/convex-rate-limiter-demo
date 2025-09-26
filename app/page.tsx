@@ -74,7 +74,7 @@ function Visualizer({
         setRetryIn(null);
         return;
       }
-      const timeLeft = status.retryAt - Date.now();
+      const timeLeft = Math.round(status.retryAt - Date.now());
 
       if (timeLeft > 0) {
         setRetryIn(timeLeft);
