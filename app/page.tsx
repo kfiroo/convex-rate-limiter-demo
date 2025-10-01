@@ -14,7 +14,7 @@ export default function Home() {
         </h1>
       </header>
       <main className="p-8 flex flex-col gap-16 container mx-auto">
-        <Bucket />
+        {/* <Bucket /> */}
         <Fixed />
       </main>
     </>
@@ -36,9 +36,20 @@ function Bucket() {
 
   const state = useQuery(api.bucket.getState);
   const limitMutation = useMutation(api.bucket.limit);
+  const resetMutation = useMutation(api.bucket.reset);
+
+  if (state) {
+    // @ts-expect-error yeah, this is a hack
+    state.ts = new Date(state.ts).toISOString();
+  }
 
   return (
-    <Visualizer status={status} state={state} limitMutation={limitMutation} />
+    <Visualizer
+      status={status}
+      state={state}
+      limitMutation={limitMutation}
+      resetMutation={resetMutation}
+    />
   );
 }
 
@@ -50,9 +61,22 @@ function Fixed() {
 
   const state = useQuery(api.fixed.getState);
   const limitMutation = useMutation(api.fixed.limit);
+  const resetMutation = useMutation(api.fixed.reset);
+
+  if (state) {
+    // @ts-expect-error yeah, this is a hack
+    state.config.start = new Date(state.config.start).toISOString();
+    // @ts-expect-error yeah, this is a hack
+    state.ts = new Date(state.ts).toISOString();
+  }
 
   return (
-    <Visualizer status={status} state={state} limitMutation={limitMutation} />
+    <Visualizer
+      status={status}
+      state={state}
+      limitMutation={limitMutation}
+      resetMutation={resetMutation}
+    />
   );
 }
 
@@ -60,10 +84,12 @@ function Visualizer({
   status,
   state,
   limitMutation,
+  resetMutation,
 }: {
   status: ReturnType<typeof useRateLimit>["status"];
   state: unknown;
   limitMutation: () => Promise<{ ok: boolean; retryAfter?: number }>;
+  resetMutation: () => Promise<null>;
 }) {
   const [orbs, setOrbs] = useState<Orb[]>([]);
   const [retryIn, setRetryIn] = useState<number | null>(null);
@@ -106,6 +132,11 @@ function Visualizer({
     setOrbs((prev) => [...prev, newOrb]);
   }, [limitMutation]);
 
+  const handleReset = useCallback(async () => {
+    await resetMutation();
+    setOrbs([]);
+  }, [resetMutation]);
+
   const destroyOrb = useCallback(
     (org: Orb) => {
       setOrbs((prev) => prev.filter((orb) => orb.id !== org.id));
@@ -116,6 +147,7 @@ function Visualizer({
   if (!status) {
     return <div>Loading...</div>;
   }
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
@@ -137,6 +169,12 @@ function Visualizer({
             className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600"
           >
             Consume
+          </button>
+          <button
+            onClick={handleReset}
+            className="px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600"
+          >
+            Reset
           </button>
 
           {/* Visualization line */}

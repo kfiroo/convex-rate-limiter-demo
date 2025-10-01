@@ -17,3 +17,8 @@ export const limit = mutation({
   args: {},
   handler: async (ctx) => limiter.limit(ctx, "bucket"),
 });
+
+export const reset = mutation({
+  args: {},
+  handler: async (ctx) => limiter.reset(ctx, "bucket"),
+});
