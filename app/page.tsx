@@ -26,6 +26,7 @@ interface Orb {
   startTime: number;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function Bucket() {
   const { status } = useRateLimit(api.bucket.getRateLimit, {
     // [recommended] Allows the hook to sync the browser and server clocks
